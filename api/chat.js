@@ -52,9 +52,12 @@ export default async function handler(req, res) {
       reply: completion.choices[0].message.content,
     });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({
-      error: err.message,
-    });
-  }
+  console.error("FULL ERROR:", err);
+
+  return res.status(500).json({
+    message: err.message,
+    stack: err.stack,
+    error: err
+  });
+}
 }
