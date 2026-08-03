@@ -23,6 +23,12 @@ export default async function handler(req, res) {
   try {
     const { message, history = [] } = req.body;
 
+    // Convert frontend history to NVIDIA/OpenAI format
+    const formattedHistory = history.map((msg) => ({
+      role: msg.role === "model" ? "assistant" : msg.role,
+      content: msg.text || msg.content,
+    }));
+
     const completion = await client.chat.completions.create({
       model: "nvidia/nemotron-3-ultra-550b-a55b",
       messages: [
@@ -31,7 +37,7 @@ export default async function handler(req, res) {
           content:
             "You are Ashish Kumar's AI portfolio assistant. Answer only questions about Ashish, his skills, projects, certifications, education, and experience.",
         },
-        ...history,
+        ...formattedHistory,
         {
           role: "user",
           content: message,
@@ -52,12 +58,12 @@ export default async function handler(req, res) {
       reply: completion.choices[0].message.content,
     });
   } catch (err) {
-  console.error("FULL ERROR:", err);
+    console.error("FULL ERROR:", err);
 
-  return res.status(500).json({
-    message: err.message,
-    stack: err.stack,
-    error: err
-  });
-}
+    return res.status(500).json({
+      message: err.message,
+      stack: err.stack,
+      error: err.error || err,
+    });
+  }
 }
