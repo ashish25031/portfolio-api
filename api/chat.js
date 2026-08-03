@@ -6,12 +6,11 @@ const client = new OpenAI({
 });
 
 export default async function handler(req, res) {
-  // CORS
+  // Enable CORS
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-  // Handle preflight request
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
@@ -23,7 +22,7 @@ export default async function handler(req, res) {
   try {
     const { message, history = [] } = req.body;
 
-    // Convert frontend history to NVIDIA/OpenAI format
+    // Convert frontend history to OpenAI/NVIDIA format
     const formattedHistory = history.map((msg) => ({
       role: msg.role === "model" ? "assistant" : msg.role,
       content: msg.text || msg.content,
@@ -35,7 +34,7 @@ export default async function handler(req, res) {
         {
           role: "system",
           content:
-            "You are Ashish Kumar's AI portfolio assistant. Answer only questions about Ashish, his skills, projects, certifications, education, and experience.",
+            "You are Ashish Kumar's AI portfolio assistant. Answer only questions about Ashish's projects, skills, education, certifications, and experience.",
         },
         ...formattedHistory,
         {
@@ -46,12 +45,6 @@ export default async function handler(req, res) {
       temperature: 1,
       top_p: 0.95,
       max_tokens: 4096,
-      extra_body: {
-        chat_template_kwargs: {
-          enable_thinking: true,
-        },
-        reasoning_budget: 4096,
-      },
     });
 
     return res.status(200).json({
@@ -62,7 +55,6 @@ export default async function handler(req, res) {
 
     return res.status(500).json({
       message: err.message,
-      stack: err.stack,
       error: err.error || err,
     });
   }
